@@ -50,15 +50,22 @@ class RegularChunk:
         else:
             return 8 + len(self.data) + 1
 
-    def writemem(self, mem):
+    def writemem(self, mem=None):
         '''
         mem: memoryview (of format 'B') to write the chunks to
+        returns the memoryview of the chunk just written (including any padding)
         '''
+        size = self.size()
+        if mem is None:
+            mem = memoryview(bytearray(range(size)))
+        else:
+            mem = mem[0:size]
         mem[0:4] = self.name
         mem[4:8] = len(self.data).to_bytes(length=4, byteorder='little', signed=False)
         mem[8:8+len(self.data)] = self.data
         if len(self.data) % 2 == 1:
             mem[8+len(self.data)] = ord(PADDING)
+        return mem
 
     def writefile(self, file):
         '''
@@ -113,18 +120,24 @@ class ContainerChunk:
         'Gets the size of the chunk (including headers and padding)'
         return 12 + sum([chunk.size() for chunk in self.subchunks])
 
-    def writemem(self, mem):
+    def writemem(self, mem=None):
         '''
         mem: memoryview (of format 'B') to write the chunks and subchunks to
+        returns the memoryview of the chunks just written
         '''
+        size = self.size()
+        if mem is None:
+            mem = memoryview(bytearray(range(size)))
+        else:
+            mem = mem[0:size]
         mem[0:4] = self.name
-        length = 4 + sum([chunk.size() for chunk in self.subchunks])
-        mem[4:8] = length.to_bytes(length=4, byteorder='little', signed=False)
+        mem[4:8] = (size-8).to_bytes(length=4, byteorder='little', signed=False)
         mem[8:12] = self.alt_name
         offset = 12
         for chunk in self.subchunks:
             chunk.writemem(mem[offset:])
             offset += chunk.size()
+        return mem
 
     def writefile(self, file):
         '''
