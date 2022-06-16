@@ -57,7 +57,7 @@ class RegularChunk:
         '''
         size = self.size()
         if mem is None:
-            mem = memoryview(bytearray(range(size)))
+            mem = memoryview(bytearray(size))
         else:
             mem = mem[0:size]
         mem[0:4] = self.name
@@ -127,7 +127,7 @@ class ContainerChunk:
         '''
         size = self.size()
         if mem is None:
-            mem = memoryview(bytearray(range(size)))
+            mem = memoryview(bytearray(size))
         else:
             mem = mem[0:size]
         mem[0:4] = self.name
