@@ -3,6 +3,8 @@ A simple Python module to read and write small RIFF files.
 
 Alternatives: For reading you could instead use the more low-level [chunk library](https://docs.python.org/3/library/chunk.html) (deprecated). Although it was originally intended for IFF files, it can be used to parse RIFF files.
 
+**TODO**: Investigate more alternatives (especially WAV parsers).
+
 ## Introduction
 It is useful to think of RIFF files as a tree-like data structure. The nodes are called *chunks*. There are two different types of chunks:
 - A **regular chunk** contains application data. It consists of:
@@ -84,7 +86,8 @@ root = ContainerChunk(b'RIFF', b'JUNK', [
     ContainerChunk(b'RIFF', b'C1  ', [
         RegularChunk(b'C1.0', b'I am a grandchild.'),
         RegularChunk(b'C1.2', b'')
-    ])
+    ]),
+    ContainerChunk(b'LIST', b'C2  ', [])
 ])
 
 # Modify
@@ -95,5 +98,5 @@ e.name = b'C1.1'
 root[b'C1  '].subchunks.append(RegularChunk(b'C1.2', b'New chunk'))
 
 # Print the RIFF structure (for debugging purposes)
-root.print()
+print(root)
 ```

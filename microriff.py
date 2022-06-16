@@ -77,13 +77,14 @@ class RegularChunk:
         if len(self.data) % 2 == 1:
             file.write(PADDING)
 
-    def print(self, spaces=0):
-        'Prints the RIFF structure (headers only) for debugging purposes'
-        indent = spaces*' '
+    def __repr__(self, spaces=0):
+        'Returns a non-reconstructible representation (for debugging purposes)'
+        import hashlib
+        hash = hashlib.md5(self.data).hexdigest()
         if len(self.data) % 2 == 0:
-            print(f'{indent}{self.name} [8 + {len(self.data)} bytes]')
+            return spaces*' ' + f'{self.name}, {len(self.data)}, data (md5: {hash})\n'
         else:
-            print(f'{indent}{self.name} [8 + {len(self.data)} + 1 bytes]')
+            return spaces*' ' + f'{self.name}, {len(self.data)}, data (md5: {hash}), padding\n'
 
 
 class ContainerChunk:
@@ -150,12 +151,10 @@ class ContainerChunk:
         for chunk in self.subchunks:
             chunk.writefile(file)
 
-    def print(self, spaces=0):
-        'Prints the RIFF structure (headers only) for debugging purposes'
-        indent = spaces*' '
-        nchunks = len(self.subchunks)
+    def __repr__(self, spaces=0):
+        'Returns a non-reconstructible representation (for debugging purposes)'
         length = 4 + sum([chunk.size() for chunk in self.subchunks])
-        print(f'{indent}{self.name} [8 + {length} bytes ({nchunks} subchunks)]')
-        print(f'{indent}    {self.alt_name}')
+        ret = spaces*' ' + f'{self.name}, {length}, {self.alt_name}, subchunks:\n'
         for chunk in self.subchunks:
-            chunk.print(spaces+4)
+            ret += chunk.__repr__(spaces+4)
+        return ret
