@@ -26,7 +26,7 @@ A RIFF file consists of a single container chunk named `RIFF`, which usually con
 ## Installation
 Just download the file [`microriff.py`](https://raw.githubusercontent.com/megamoron/microriff/main/microriff.py) and add it to your project. The file is public domain, so no attribution is required.
 
-**NOTE**: You might need to adjust the global `PADDING` variable. To figure out what padding value your RIFF file uses, run `microriff.py` as a script with the RIFF file as argument. (Not all RIFF files contain padding.)
+**Note**: You might need to adjust the global `PADDING` variable. To figure out what padding value your RIFF file uses, run `microriff.py` as a script with the RIFF file as argument. (Not all RIFF files contain padding. If there is no mention of any padding, your RIFF file does not contain any.)
 
 ## Usage
 
