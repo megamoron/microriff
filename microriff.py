@@ -154,7 +154,29 @@ class ContainerChunk:
     def __repr__(self, spaces=0):
         'Returns a non-reconstructible representation (for debugging purposes)'
         length = 4 + sum([chunk.size() for chunk in self.subchunks])
-        ret = spaces*' ' + f'{self.name}, {length}, {self.alt_name}, subchunks:\n'
+        ret = spaces*' ' + f'{self.name}, {length}, {self.alt_name}\n'
         for chunk in self.subchunks:
             ret += chunk.__repr__(spaces+4)
         return ret
+
+
+def _printpads(mem):
+    '''
+    Parses a chunk stored in mem, possibly recursively, and prints all padding values.
+    Any additional data after the chunk is ignored.
+    For debugging purposes
+
+    mem: memoryview (of format 'B') to parse
+    '''
+    name = mem[0:4].tobytes()
+    end = mem[4:8].cast('I')[0] + 8
+    if name in CONTAINER_KEYWORDS:
+        offset = 12
+        while offset < end:
+            _printpads(mem[offset:])
+            offset += mem[offset+4:offset+8].cast('I')[0] + 8
+            offset += offset % 2  # Consume padding if present (i.e. if offset is now odd)
+    else:
+        if end % 2 == 1:
+            pad = mem[end].to_bytes(1, 'little')
+            print(f'Chunk {name} has padding {pad}')
