@@ -160,23 +160,26 @@ class ContainerChunk:
         return ret
 
 
-def _printpads(mem):
-    '''
-    Parses a chunk stored in mem, possibly recursively, and prints all padding values.
-    Any additional data after the chunk is ignored.
-    For debugging purposes
-
-    mem: memoryview (of format 'B') to parse
-    '''
-    name = mem[0:4].tobytes()
-    end = mem[4:8].cast('I')[0] + 8
-    if name in CONTAINER_KEYWORDS:
-        offset = 12
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) != 2:
+        print(f'python {sys.argv[0]} [FILE]', file=sys.stderr)
+        sys.exit(1)
+    with open(sys.argv[1], 'br') as f:
+        # Print the RIFF structure
+        mem = memoryview(f.read())
+        print(parsemem(mem))
+        # Print any padding (DFS traversal)
+        end = mem[4:8].cast('I')[0] + 8
+        offset = 0
         while offset < end:
-            _printpads(mem[offset:])
-            offset += mem[offset+4:offset+8].cast('I')[0] + 8
-            offset += offset % 2  # Consume padding if present (i.e. if offset is now odd)
-    else:
-        if end % 2 == 1:
-            pad = mem[end].to_bytes(1, 'little')
-            print(f'Chunk {name} has padding {pad}')
+            name = mem[offset:offset+4].tobytes()
+            length = mem[offset+4:offset+8].cast('I')[0] + 8
+            if name in CONTAINER_KEYWORDS:
+                offset += 12
+                continue
+            if length % 2 == 1:
+                pad = mem[offset+length].to_bytes(1, 'little')
+                print(f'Chunk {name} has padding {pad}')
+                length += 1
+            offset += length
