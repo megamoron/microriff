@@ -36,7 +36,7 @@ To parse a file, first load it into memory and construct a memoryview of `unsign
 ### Working with chunks
 You directly access and modify the fields of individual chunks. Regular chunks have the following fields:
 - `name` for the 4-byte name (as bytes)
-- `data` for the application data (as memoryview of `unsigned char` (format 'B'))
+- `data` for the application data (as a binary sequence type, default is a memoryview of `unsigned char` (format 'B'))
 
 Container chunks have the following fields:
 - `name` for the 4-byte name (as bytes)
@@ -68,7 +68,7 @@ root = microriff.parsemem(memview)
 import xml.dom.minidom
 dom = xml.dom.minidom.parseString(root[b'META'].data.tobytes())
 ```
-Now we can work with the DOM object. Once we have finished, we write our changes to the META chunk and then save to disk.
+Now we can work with the DOM object `dom`. Once we have finished, we write our changes to the META chunk and then save to disk.
 ```
 # Update the chunk data
 root[b'META'].data = dom.toxml(encoding='UTF-8')
