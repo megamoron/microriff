@@ -26,8 +26,6 @@ A RIFF file consists of a single container chunk named `RIFF`, which usually con
 ## Installation
 Just download the file [`microriff.py`](https://raw.githubusercontent.com/megamoron/microriff/main/microriff.py) and add it to your project. The file is public domain, so no attribution is required.
 
-**Note**: You might need to adjust the global `PADDING` variable. To figure out what padding value your RIFF file uses, run `microriff.py` as a script with the RIFF file as argument. (Not all RIFF files contain padding. If there is no mention of any padding, your RIFF file does not contain any.)
-
 ## Usage
 
 ### Parsing
@@ -49,6 +47,8 @@ You can refer to children of a container chunk using `__getitem__`. You can eith
 
 ### Writing to a file (or memory)
 Each chunk object provides the methods `writefile` and `writemem` to write the subtree rooted at this chunk to a binary file or memoryview of `unsigned char` (format 'B').
+
+You might need to pass the correct padding value. To find out what padding value your RIFF file uses, run `microriff.py` as a script with the RIFF file as argument. (Not all RIFF files contain padding. If there is no mention of any padding, your RIFF file does not contain any.)
 
 ## Examples
 
@@ -75,7 +75,7 @@ root[b'META'].data = dom.toxml(encoding='UTF-8')
 
 # Write to file
 with open('lemon', 'bw') as f:
-    root.writefile(f)
+    root.writefile(f, pad=b'\x30')
 ```
 
 ### Manually creating and editing a RIFF structure

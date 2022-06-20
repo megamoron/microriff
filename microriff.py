@@ -6,8 +6,6 @@ CONTAINER_KEYWORDS = (
     b'LIST'
 )
 
-PADDING = b'0'  # 0x30
-
 def parsemem(mem):
     '''
     Parses a chunk stored in mem, possibly recursively.
@@ -50,9 +48,10 @@ class RegularChunk:
         else:
             return 8 + len(self.data) + 1
 
-    def writemem(self, mem=None):
+    def writemem(self, mem=None, pad=b'\x00'):
         '''
         mem: memoryview (of format 'B') to write the chunks to
+        pad: byte value to use for padding
         returns the memoryview of the chunk just written (including any padding)
         '''
         size = self.size()
@@ -64,18 +63,19 @@ class RegularChunk:
         mem[4:8] = len(self.data).to_bytes(length=4, byteorder='little', signed=False)
         mem[8:8+len(self.data)] = self.data
         if len(self.data) % 2 == 1:
-            mem[8+len(self.data)] = ord(PADDING)
+            mem[8+len(self.data)] = ord(pad)
         return mem
 
-    def writefile(self, file):
+    def writefile(self, file, pad=b'\x00'):
         '''
         file: binary file to write the chunks to
+        pad: byte value to use for padding
         '''
         file.write(self.name)
         file.write(len(self.data).to_bytes(length=4, byteorder='little', signed=False))
         file.write(self.data)
         if len(self.data) % 2 == 1:
-            file.write(PADDING)
+            file.write(pad)
 
     def __repr__(self, spaces=0):
         'Returns a non-reconstructible representation (for debugging purposes)'
@@ -121,9 +121,10 @@ class ContainerChunk:
         'Gets the size of the chunk (including headers and padding)'
         return 12 + sum([chunk.size() for chunk in self.subchunks])
 
-    def writemem(self, mem=None):
+    def writemem(self, mem=None, pad=b'\x00'):
         '''
         mem: memoryview (of format 'B') to write the chunks and subchunks to
+        pad: byte value to use for padding
         returns the memoryview of the chunks just written
         '''
         size = self.size()
@@ -136,20 +137,21 @@ class ContainerChunk:
         mem[8:12] = self.alt_name
         offset = 12
         for chunk in self.subchunks:
-            chunk.writemem(mem[offset:])
+            chunk.writemem(mem[offset:], pad)
             offset += chunk.size()
         return mem
 
-    def writefile(self, file):
+    def writefile(self, file, pad=b'\x00'):
         '''
         file: binary file to write the chunks and subchunks to
+        pad: byte value to use for padding
         '''
         file.write(self.name)
         length = 4 + sum([chunk.size() for chunk in self.subchunks])
         file.write(length.to_bytes(length=4, byteorder='little', signed=False))
         file.write(self.alt_name)
         for chunk in self.subchunks:
-            chunk.writefile(file)
+            chunk.writefile(file, pad)
 
     def __repr__(self, spaces=0):
         'Returns a non-reconstructible representation (for debugging purposes)'
