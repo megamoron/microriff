@@ -16,17 +16,22 @@ It is useful to think of RIFF files as a tree-like data structure. The nodes are
 
   **Note**: Some parsers expect the padding byte to be a specific value.
 - A **container chunk** contains subchunks. It consists of the following fields:
-  - 4-byte name: This must be a specific keyword that identifies this chunk as a container (usually `RIFF` or `LIST`)
+  - 4-byte name: This must be a specific keyword that identifies this chunk as a container (usually `RIFF` or `LIST` in ASCII)
   - 4-byte little-endian unsigned integer: Equal to the length of the subchunk data plus 4
   - 4-byte alternative name: An alternative name for this container chunk, as the first name-field needs to be a specific keyword.
   - Subchunk data: A sequence of chunks (possibly with associated padding bytes)
 
-A RIFF file consists of a single container chunk named `RIFF`, which usually contains multiple subchunks.
+A RIFF file consists of a single container chunk named `RIFF` (in ASCII), which usually contains multiple subchunks.
 
 ## Installation
 Just download the file [`microriff.py`](https://raw.githubusercontent.com/megamoron/microriff/main/microriff.py) and add it to your project. The file is public domain, so no attribution is required.
 
 ## Usage
+
+### Getting to know your RIFF files
+Run `microriff.py` as a script with one of your RIFF files as argument. It will show the RIFF structure and the chunk headers as specified in the introduction. It will also list any padding values present in the file.
+
+**Note**: Not all RIFF files contain padding. If there is no mention of any padding, your RIFF file does not contain any.
 
 ### Parsing
 To parse a file, first load it into memory and construct a memoryview of `unsigned char` (format 'B'). Then use the function `parsemem` to parse the root chunk and all of its subchunks. See the [example below](#Reading-and-writing-RIFF-files).
@@ -46,9 +51,7 @@ The length field and any padding bytes are added only when the data structure is
 You can refer to children of a container chunk using `__getitem__`. You can either use integer offsets or chunk names (as bytes). You can also the alternative name for children that are themselves containers.
 
 ### Writing to a file (or memory)
-Each chunk object provides the methods `writefile` and `writemem` to write the subtree rooted at this chunk to a binary file or memoryview of `unsigned char` (format 'B').
-
-You might need to pass the correct padding value. To find out what padding value your RIFF file uses, run `microriff.py` as a script with the RIFF file as argument. (Not all RIFF files contain padding. If there is no mention of any padding, your RIFF file does not contain any.)
+Each chunk object provides the methods `writefile` and `writemem` to write the subtree rooted at this chunk to a binary file or memoryview of `unsigned char` (format 'B'). For compatibility with external libraries, you might need to pass the correct padding value.
 
 ## Examples
 
